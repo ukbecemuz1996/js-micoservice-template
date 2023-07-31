@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  service-1:
+    build: ./service-1
+    ports:
+      - "4000:1000"
+    networks:
+      - droots
+    volumes:
+      - ./service-1:/usr/src/app
+  service-2:
+    build: ./service-2
+    ports:
+      - "5000:2000"
+    networks:
+      - droots
+    volumes:
+      - ./service-2:/usr/src/app
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - droots
+  kafka:
+    image: bitnami/kafka
+    restart: always
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+    networks:
+      - droots
+networks:
+  droots:
+    driver: bridge
